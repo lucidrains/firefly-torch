@@ -42,6 +42,8 @@ for _ in range(steps):
 
     distance = delta_positions.norm(dim = -1)
 
+    # todo - figure out why the fitness of the more luminescent firefly does not factor into the beta
+
     betas = beta0 * (-gamma * distance ** 2).exp()
 
     # calculate movements
