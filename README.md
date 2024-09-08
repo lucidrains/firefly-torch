@@ -2,6 +2,12 @@
 
 Exploration into the Firefly algorithm (a generalized version of particle swarm optimization) in Pytorch. In particular interested in hybrid <a href="https://academic.oup.com/jcde/article/9/2/706/6566441">firefly + genetic algorithms</a>, or ones that are gender-based to encourage better exploration.
 
+## Install
+
+```bash
+$ pip install -r requirements.txt
+```
+
 ## Usage
 
 Test on rosenbrock minimization
