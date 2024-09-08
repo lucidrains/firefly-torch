@@ -1,5 +1,5 @@
 import torch
-import einx
+import einx # s - species, p - population, i - population source, j - population target, d - dimension
 
 # test objective function - solution is close to all 1.'s
 
@@ -9,7 +9,7 @@ def rosenbrock(x):
 # constants
 
 steps = 1000
-species = 2
+species = 4
 population_size = 100
 dimensions = 4
 lower_bound = -4.
@@ -35,12 +35,12 @@ for step in range(steps):
 
     # fireflies with lower light intensity (high cost) moves towards the higher intensity (lower cost)
 
-    move_mask = einx.greater('... i, ... j -> ... i j', costs, costs)
+    move_mask = einx.greater('s i, s j -> s i j', costs, costs)
 
     # get vectors of fireflies to one another
     # calculate distance and the beta
 
-    delta_positions = einx.subtract('... j d, ... i d -> ... i j d', fireflies, fireflies)
+    delta_positions = einx.subtract('s j d, s i d -> s i j d', fireflies, fireflies)
 
     distance = delta_positions.norm(dim = -1)
 
@@ -50,12 +50,12 @@ for step in range(steps):
 
     # calculate movements
 
-    attraction = einx.multiply('... i j, ... i j d -> ... i j d', move_mask * betas, delta_positions)
+    attraction = einx.multiply('s i j, s i j d -> s i j d', move_mask * betas, delta_positions)
     random_walk = alpha * (torch.rand_like(fireflies) - 0.5) * (upper_bound - lower_bound)
 
     # move the fireflies
 
-    fireflies += einx.sum('... i j d -> ... i d', attraction) + random_walk
+    fireflies += einx.sum('s i j d -> s i d', attraction) + random_walk
 
     fireflies.clamp_(min = lower_bound, max = upper_bound)
 
