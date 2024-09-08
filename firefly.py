@@ -15,9 +15,9 @@ lower_bound = -4.
 upper_bound = 4.
 
 beta0 = 2.           # exploitation factor, moving fireflies of low light intensity to high
-gamma = 1.           # controls light intensity decay over distance
+gamma = 1.           # controls light intensity decay over distance - setting this to zero will make firefly equivalent to vanilla PSO
 alpha = 0.1          # exploration factor
-alpha_decay = 0.8    # exploration decay each step
+alpha_decay = 0.9    # exploration decay each step
 
 # main algorithm
 
@@ -42,7 +42,7 @@ for _ in range(steps):
 
     distance = delta_positions.norm(dim = -1)
 
-    # todo - figure out why the fitness of the more luminescent firefly does not factor into the beta
+    # todo - figure out why the difference in fitness does not factor into the beta
 
     betas = beta0 * (-gamma * distance ** 2).exp()
 
@@ -53,9 +53,7 @@ for _ in range(steps):
 
     # move the fireflies
 
-    fireflies += attraction.sum(dim = 1)
-
-    fireflies += random_walk
+    fireflies += einx.sum('i j d -> i d', attraction) + random_walk
 
     fireflies.clamp_(min = lower_bound, max = upper_bound)
 
