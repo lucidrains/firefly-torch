@@ -19,19 +19,32 @@ mix_species_every = 25
 beta0 = 2.           # exploitation factor, moving fireflies of low light intensity to high
 gamma = 1.           # controls light intensity decay over distance - setting this to zero will make firefly equivalent to vanilla PSO
 alpha = 0.1          # exploration factor
-alpha_decay = 0.9    # exploration decay each step
+alpha_decay = 0.95   # exploration decay each step
+
+use_cuda = True
+verbose = True
+
+cost_function = rosenbrock
 
 # main algorithm
 
 fireflies = torch.zeros((species, population_size, dimensions)).uniform_(lower_bound, upper_bound)
 
-cost_function = rosenbrock
+# maybe use cuda
+
+if torch.cuda.is_available() and use_cuda:
+    fireflies = fireflies.cuda()
+
+# iterate
 
 for step in range(steps):
 
     # cost, which is inverse of light intensity
 
     costs = cost_function(fireflies)
+
+    if verbose:
+        print(f'{step}: {costs.amin():.5f}')
 
     # fireflies with lower light intensity (high cost) moves towards the higher intensity (lower cost)
 
@@ -43,8 +56,6 @@ for step in range(steps):
     delta_positions = einx.subtract('s j d, s i d -> s i j d', fireflies, fireflies)
 
     distance = delta_positions.norm(dim = -1)
-
-    # todo - figure out why the difference in fitness does not factor into the beta
 
     betas = beta0 * (-gamma * distance ** 2).exp()
 
@@ -59,16 +70,16 @@ for step in range(steps):
 
     fireflies.clamp_(min = lower_bound, max = upper_bound)
 
+    # decay exploration factor
+
+    alpha *= alpha_decay
+
     # have species intermix every so often
 
     if species > 1 and (step % mix_species_every) == 0:
         midpoint = population_size // 2
         fireflies, fireflies_rotate = fireflies[:, :midpoint], fireflies[:, midpoint:]
         fireflies = torch.cat((fireflies, torch.roll(fireflies_rotate, shifts = 1, dims = (0,))), dim = 1)
-
-    # decay exploration factor
-
-    alpha *= alpha_decay
 
 # print solution
 
