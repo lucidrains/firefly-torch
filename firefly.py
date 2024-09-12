@@ -11,7 +11,7 @@ def rosenbrock(x):
 steps = 5000
 species = 4
 population_size = 1000
-dimensions = 10
+dimensions = 10      # set this to something lower (2-10) for fireflies without sexual reproduction to solve
 lower_bound = -4.
 upper_bound = 4.
 mix_species_every = 25
@@ -19,14 +19,14 @@ mix_species_every = 25
 beta0 = 2.           # exploitation factor, moving fireflies of low light intensity to high
 gamma = 1.           # controls light intensity decay over distance - setting this to zero will make firefly equivalent to vanilla PSO
 alpha = 0.1          # exploration factor
-alpha_decay = 0.95   # exploration decay each step
+alpha_decay = 0.995  # exploration decay each step
 
 # genetic algorithm related
 
-use_genetic_algorithm = True
+use_genetic_algorithm = True  # turn on genetic algorithm, for comparing with non-sexual fireflies
 breed_every = 10
-tournament_size = 50
-num_children = 100
+tournament_size = 100
+num_children = population_size // 2
 
 assert tournament_size <= population_size
 assert num_children <= population_size
@@ -111,7 +111,7 @@ for step in range(steps):
     tournament_participants = einx.get_at('s [p], s c t -> s c t', fitness, tournament_indices)
     winners_per_tournament = tournament_participants.topk(2, dim = -1).indices
 
-    # breed the winners - w = 2
+    # breed the top two winners of each tournament
 
     parent1, parent2 = einx.get_at('s [p] d, s c parents -> parents s c d', fireflies, winners_per_tournament)
 
@@ -121,7 +121,7 @@ for step in range(steps):
 
     children = torch.where(crossover_mask, parent1, parent2)
 
-    # sort the fireflies by fitness and replace the worst performing with the new children
+    # sort the fireflies by cost and replace the worst performing with the new children
 
     _, sorted_indices = cost.sort(dim = -1)
     sorted_fireflies = einx.get_at('s [p] d, s sorted -> s sorted d', fireflies, sorted_indices)
@@ -137,4 +137,4 @@ sorted_costs, sorted_indices = costs.sort(dim = -1)
 
 fireflies = fireflies[sorted_indices]
 
-print(f'best performing firefly for rosenbrock: {sorted_costs[0]:.3f}: {fireflies[0]}')
+print(f'best performing firefly for rosenbrock with {dimensions} dimensions: {sorted_costs[0]:.3f}: {fireflies[0]}')
