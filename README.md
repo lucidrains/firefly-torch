@@ -28,3 +28,16 @@ $ python firefly.py
     url     = {https://api.semanticscholar.org/CorpusID:46940737}
 }
 ```
+
+```bibtex
+@article{article,
+    author  = {El-Shorbagy, M. and Elrefaey, Adel},
+    year    = {2022},
+    month   = {04},
+    pages   = {706-730},
+    title   = {A hybrid genetic-firefly algorithm for engineering design problems},
+    volume  = {Journal of Computational Design and Engineering, Volume 9},
+    journal = {Journal of Computational Design and Engineering},
+    doi     = {10.1093/jcde/qwac013}
+}
+```
