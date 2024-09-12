@@ -1,4 +1,4 @@
-## Firefly Algorithm - Pytorch (wip)
+## Firefly Algorithm - Pytorch
 
 Exploration into the Firefly algorithm (a generalized version of particle swarm optimization) in Pytorch. In particular interested in hybrid <a href="https://academic.oup.com/jcde/article/9/2/706/6566441">firefly + genetic algorithms</a>, or ones that are <a href="https://www.sciencedirect.com/science/article/abs/pii/S0957417423005298">gender-based</a>.
 
