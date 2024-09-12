@@ -1,2 +1,3 @@
 einx
+fire
 torch

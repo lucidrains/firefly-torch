@@ -13,7 +13,7 @@ $ pip install -r requirements.txt
 Test on rosenbrock minimization
 
 ```bash
-$ python firefly.py
+$ python firefly.py --use-genetic-algorithm 1
 ```
 
 ## Citations
