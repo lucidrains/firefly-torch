@@ -9,6 +9,7 @@ def rosenbrock(x):
 
 # hyperparameters
 
+@torch.inference_mode()
 def main(
     steps = 5000,
     species = 4,
