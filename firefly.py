@@ -14,7 +14,7 @@ def main(
     steps = 5000,
     colonies = 4,
     population_size = 1000,
-    dimensions = 15,      # set this to something lower (2-10) for fireflies without sexual reproduction to solve
+    dimensions = 12,      # set this to something lower (2-10) for fireflies without sexual reproduction to solve
     lower_bound = -4.,
     upper_bound = 4.,
     migrate_every = 100,
@@ -98,7 +98,7 @@ def main(
             midpoint = population_size // 2
             fireflies, fireflies_rotate = fireflies[:, :midpoint], fireflies[:, midpoint:]
             migrate_indices = torch.randperm(colonies, device = device)
-            fireflies = torch.cat((fireflies, fireflies[migrate_indices]), dim = 1)
+            fireflies = torch.cat((fireflies, fireflies_rotate[migrate_indices]), dim = 1)
 
         # maybe genetic algorithm
 
