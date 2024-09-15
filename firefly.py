@@ -1,6 +1,6 @@
 import fire
 import torch
-import einx # s - species, p - population, i - population source, j - population target, t - tournament participants, d - dimension
+import einx # s - colonies, p - population, i - population source, j - population target, t - tournament participants, d - dimension
 
 # test objective function - solution is close to all 1.'s
 
@@ -12,12 +12,12 @@ def rosenbrock(x):
 @torch.inference_mode()
 def main(
     steps = 5000,
-    species = 4,
+    colonies = 4,
     population_size = 1000,
     dimensions = 15,      # set this to something lower (2-10) for fireflies without sexual reproduction to solve
     lower_bound = -4.,
     upper_bound = 4.,
-    mix_species_every = 25,
+    migrate_every = 100,
 
     beta0 = 2.,           # exploitation factor, moving fireflies of low light intensity to high
     gamma = 1.,           # controls light intensity decay over distance - setting this to zero will make firefly equivalent to vanilla PSO
@@ -44,7 +44,7 @@ def main(
 
     # main algorithm
 
-    fireflies = torch.zeros((species, population_size, dimensions)).uniform_(lower_bound, upper_bound)
+    fireflies = torch.zeros((colonies, population_size, dimensions)).uniform_(lower_bound, upper_bound)
 
     # maybe use cuda
 
@@ -92,12 +92,13 @@ def main(
 
         alpha *= alpha_decay
 
-        # have species intermix every so often
+        # have colonies migrate every so often
 
-        if species > 1 and (step % mix_species_every) == 0:
+        if colonies > 1 and migrate_every > 0 and (step % migrate_every) == 0:
             midpoint = population_size // 2
             fireflies, fireflies_rotate = fireflies[:, :midpoint], fireflies[:, midpoint:]
-            fireflies = torch.cat((fireflies, torch.roll(fireflies_rotate, shifts = 1, dims = (0,))), dim = 1)
+            migrate_indices = torch.randperm(colonies, device = device)
+            fireflies = torch.cat((fireflies, fireflies[migrate_indices]), dim = 1)
 
         # maybe genetic algorithm
 
@@ -109,7 +110,7 @@ def main(
         cost = cost_function(fireflies)
         fitness = 1. / cost
 
-        batch_randperm = torch.randn((species, num_children, population_size), device = device).argsort(dim = -1)
+        batch_randperm = torch.randn((colonies, num_children, population_size), device = device).argsort(dim = -1)
         tournament_indices = batch_randperm[..., :tournament_size]
 
         participant_fitnesses = einx.get_at('s [p], s c t -> s c t', fitness, tournament_indices)
