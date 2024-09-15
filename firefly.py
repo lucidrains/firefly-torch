@@ -14,7 +14,7 @@ def main(
     steps = 5000,
     species = 4,
     population_size = 1000,
-    dimensions = 10,        # set this to something lower (2-10) for fireflies without sexual reproduction to solve
+    dimensions = 15,      # set this to something lower (2-10) for fireflies without sexual reproduction to solve
     lower_bound = -4.,
     upper_bound = 4.,
     mix_species_every = 25,
@@ -112,12 +112,14 @@ def main(
         batch_randperm = torch.randn((species, num_children, population_size), device = device).argsort(dim = -1)
         tournament_indices = batch_randperm[..., :tournament_size]
 
-        tournament_participants = einx.get_at('s [p], s c t -> s c t', fitness, tournament_indices)
-        winners_per_tournament = tournament_participants.topk(2, dim = -1).indices
+        participant_fitnesses = einx.get_at('s [p], s c t -> s c t', fitness, tournament_indices)
+        winner_tournament_ids = participant_fitnesses.topk(2, dim = -1).indices
+
+        winning_firefly_indices = einx.get_at('s c [t], s c parents -> s c parents', tournament_indices, winner_tournament_ids)
 
         # breed the top two winners of each tournament
 
-        parent1, parent2 = einx.get_at('s [p] d, s c parents -> parents s c d', fireflies, winners_per_tournament)
+        parent1, parent2 = einx.get_at('s [p] d, s c parents -> parents s c d', fireflies, winning_firefly_indices)
 
         # do a uniform crossover
 
