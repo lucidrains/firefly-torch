@@ -17,7 +17,7 @@ def main(
     dimensions = 12,      # set this to something lower (2-10) for fireflies without sexual reproduction to solve
     lower_bound = -4.,
     upper_bound = 4.,
-    migrate_every = 100,
+    migrate_every = 50,
 
     beta0 = 2.,           # exploitation factor, moving fireflies of low light intensity to high
     gamma = 1.,           # controls light intensity decay over distance - setting this to zero will make firefly equivalent to vanilla PSO
@@ -28,8 +28,8 @@ def main(
 
     use_genetic_algorithm = False,  # turn on genetic algorithm, for comparing with non-sexual fireflies
     breed_every = 10,
-    tournament_size = 100,
-    num_children = 500
+    tournament_size = 50,
+    num_children = 250
 ):
 
     assert tournament_size <= population_size
@@ -128,12 +128,11 @@ def main(
 
         children = torch.where(crossover_mask, parent1, parent2)
 
-        # sort the fireflies by cost and replace the worst performing with the new children
+        # sort the fireflies by fitness and replace the worst performing with the new children
 
-        _, sorted_indices = cost.sort(dim = -1)
-        sorted_fireflies = einx.get_at('s [p] d, s sorted -> s sorted d', fireflies, sorted_indices)
+        replacement_mask = fitness.argsort(dim = -1).argsort(dim = -1) < num_children
 
-        fireflies = torch.cat((sorted_fireflies[:, :-num_children],  children), dim = -2)
+        fireflies[replacement_mask] = einx.rearrange('s p d -> (s p) d', children)
 
     # print solution
 
